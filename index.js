@@ -1,18 +1,19 @@
 const { IncomingWebhook } = require('@slack/client');
 const humanizeDuration = require('humanize-duration');
-const Octokit = require('@octokit/rest');
+const { Octokit } = require("@octokit/rest")
 const config = require('./config.json');
 
 module.exports.webhook = new IncomingWebhook(config.SLACK_WEBHOOK_URL);
 module.exports.status = config.GC_SLACK_STATUS;
 
 module.exports.getGithubCommit = async (build, octokit) => {
-  try {
-    const cloudSourceRepo = build.source.repoSource.repoName;
-    const { commitSha } = build.sourceProvenance.resolvedRepoSource;
-
+    try {
+	console.log("github commit "+ JSON.stringify(build.substitutions))
+    const cloudSourceRepo = build.substitutions.REPO_NAME;
+    const commitSha = build.substitutions.COMMIT_SHA;
+      console.log("SHA: "+commitSha + " REPO : "+ cloudSourceRepo)
     // format github_ownerName_repoName
-      const githubOwner = "anantasty"
+      const githubOwner = "guarddog-ai"
       const githubRepo = cloudSourceRepo
 
     // get github commit
@@ -21,7 +22,7 @@ module.exports.getGithubCommit = async (build, octokit) => {
       owner: githubOwner,
       repo: githubRepo,
     });
-
+	console.log("git commit "+ JSON.stringify(githubCommit))
     // return github commit
     return githubCommit;
   } catch (err) {
@@ -31,15 +32,14 @@ module.exports.getGithubCommit = async (build, octokit) => {
 
 // subscribe is the main function called by GCF.
 module.exports.subscribe = async (event) => {
-    console.log("EVENT IS "+event.data)
   try {
-    const token = process.env.GITHUB_TOKEN;
+    const token = "cb76c947310f8605e4e90732a6ef48617c8d6eaa"
     const octokit = token && new Octokit({
       auth: `token ${token}`,
     });
       console.log("octokit  "+ octokit)
     const build = module.exports.eventToBuild(event.data);
-
+      console.log("EVENT IS "+ JSON.stringify(build))
     // Skip if the current status is not in the status list.
     const status = module.exports.status || ['SUCCESS', 'FAILURE', 'INTERNAL_ERROR', 'TIMEOUT'];
     if (status.indexOf(build.status) === -1) {
@@ -112,15 +112,13 @@ module.exports.createSlackMessage = async (build, githubCommit) => {
   };
 
   let repoName, branchName;
-  if (build.source && build.source.repoSource) {
-    ({ repoName, branchName } = build.source.repoSource);
-  }
-  else if (build.substitutions) {
+  if (build.substitutions) {
     repoName = build.substitutions.REPO_NAME;
     branchName = build.substitutions.BRANCH_NAME;
   }
 
-  // Add source information to the message.
+    // Add source information to the message.
+    
   if (repoName && branchName) {
     message.attachments[0].fields.push({
       title: 'Repository',
@@ -132,7 +130,8 @@ module.exports.createSlackMessage = async (build, githubCommit) => {
       value: branchName,
     });
 
-    if (githubCommit) {
+      if (githubCommit) {
+	  console.log("AUTHOR "+ githubCommit.data)
       message.attachments[0].fields.push({
         title: 'Commit Author',
         value: githubCommit.data.author.name,
