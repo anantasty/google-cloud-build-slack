@@ -1,1 +1,4 @@
-{"SLACK_WEBHOOK_URL":"https://hooks.slack.com/services/XXX"}
+{
+  "SLACK_WEBHOOK_URL" : "https://hooks.slack.com/services/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",
+  "GC_SLACK_STATUS": ["SUCCESS", "FAILURE", "TIMEOUT", "INTERNAL_ERROR"]
+}

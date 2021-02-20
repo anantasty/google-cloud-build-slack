@@ -12,7 +12,8 @@ module.exports.getGithubCommit = async (build, octokit) => {
     const { commitSha } = build.sourceProvenance.resolvedRepoSource;
 
     // format github_ownerName_repoName
-    const [, githubOwner, githubRepo] = cloudSourceRepo.split('_');
+      const githubOwner = "anantasty"
+      const githubRepo = cloudSourceRepo
 
     // get github commit
     const githubCommit = await octokit.git.getCommit({
@@ -30,11 +31,13 @@ module.exports.getGithubCommit = async (build, octokit) => {
 
 // subscribe is the main function called by GCF.
 module.exports.subscribe = async (event) => {
+    console.log("EVENT IS "+event.data)
   try {
     const token = process.env.GITHUB_TOKEN;
     const octokit = token && new Octokit({
       auth: `token ${token}`,
     });
+      console.log("octokit  "+ octokit)
     const build = module.exports.eventToBuild(event.data);
 
     // Skip if the current status is not in the status list.
@@ -44,7 +47,7 @@ module.exports.subscribe = async (event) => {
     }
 
     const githubCommit = await module.exports.getGithubCommit(build, octokit);
-
+      console.log("commit  -  "+ githubCommit)
     const message = await module.exports.createSlackMessage(build, githubCommit);
     // Send message to slack.
     module.exports.webhook.send(message);
