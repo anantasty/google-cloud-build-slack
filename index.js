@@ -33,7 +33,7 @@ module.exports.getGithubCommit = async (build, octokit) => {
 // subscribe is the main function called by GCF.
 module.exports.subscribe = async (event) => {
   try {
-    const token = "cb76c947310f8605e4e90732a6ef48617c8d6eaa"
+      const token = process.env.GITHUB_TOKEN;
     const octokit = token && new Octokit({
       auth: `token ${token}`,
     });
@@ -111,8 +111,11 @@ module.exports.createSlackMessage = async (build, githubCommit) => {
     ],
   };
 
-  let repoName, branchName;
-  if (build.substitutions) {
+    let repoName, branchName;
+    if (build.source && build.source.repoSource) {
+	({ repoName, branchName } = build.source.repoSource);
+    }
+  else if (build.substitutions) {
     repoName = build.substitutions.REPO_NAME;
     branchName = build.substitutions.BRANCH_NAME;
   }

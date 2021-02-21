@@ -44,4 +44,5 @@ fi
 if [ -z "$REGION" ]; then
   export REGION="us-central1"
 fi
-gcloud beta functions deploy $FUNCTION_NAME --stage-bucket $BUCKET_NAME --trigger-topic cloud-builds --entry-point subscribe --region $REGION --runtime nodejs10
+echo "gcloud beta functions deploy $FUNCTION_NAME --stage-bucket $BUCKET_NAME --trigger-topic cloud-builds --entry-point subscribe --region $REGION --runtime nodejs10 --set-env-vars GITHUB_TOKEN=$GITHUB_TOKEN"
+gcloud beta functions deploy $FUNCTION_NAME --stage-bucket $BUCKET_NAME --trigger-topic cloud-builds --entry-point subscribe --region $REGION --runtime nodejs10 --set-env-vars GITHUB_TOKEN=$GITHUB_TOKEN
